@@ -1,0 +1,32 @@
+---
+
+- name: Install required packages for accel-ppp
+  action: >
+    apt name={{ item }} state=present update_cache=yes
+  with_items:
+    - cmake
+    - openssl
+    - libpcre3-dev
+    - libsnmp-dev
+    - snmp-mibs-downloader
+    - liblua5.1-0
+
+- name: Clone accel-ppp source from git
+  git: 
+    repo: https://git.code.sf.net/p/accel-ppp/code
+    dest: "{{ source_dir }}/accelppp"
+    version: "{{ accel_version }}"
+    accept_hostkey: yes
+
+- name: Create build dir
+  file: path="{{ source_dir }}/accelppp-build" state=directory
+
+- name: Compile and install accel-ppp source
+  shell: "{{ item }}"
+  args:
+    chdir: "{{ source_dir }}/accelppp-build"
+  with_items:
+    - cmake "{{ build_option }} {{ source_dir }}/accelppp"
+    - make
+    - make install
+
